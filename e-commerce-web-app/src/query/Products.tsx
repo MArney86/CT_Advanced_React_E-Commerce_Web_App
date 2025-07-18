@@ -50,7 +50,7 @@ export default function Products({ category = "All"}: { category: string }) {
                                 <Card.Text className='product-card-desc'>{product.description}</Card.Text>
                                 <Card.Text className='product-card-price'>Price: ${product.price.toFixed(2)}</Card.Text>
                                 <Card.Text className='product-card-category'>Category: {product.category}</Card.Text>
-                                <Card.Text> <Rating style={{ maxWidth: 250 }} value={product.rating.rate} readOnly /></Card.Text>
+                                <Rating style={{ maxWidth: 250 }} value={product.rating.rate} readOnly />
                                 <Card.Text className='small-text'>Rating: {product.rating.rate} ({product.rating.count} reviews)</Card.Text>
                             </Card.Body>
                             <Card.Footer className='product-card-btn'>
