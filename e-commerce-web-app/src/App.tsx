@@ -3,7 +3,7 @@ import NavHeader from './components/NavHeader'
 import './App.css'
 import Home from './components/Home'
 //import CartPage from './components/CartPage'
-//import NotFound from './components/NotFound'
+import NotFound from './components/NotFound'
 
 function App() {
     return (
@@ -13,8 +13,8 @@ function App() {
         <Route path="/" element={<Home />} />
         {/* Uncomment the following lines when CartPage and NotFound components are available
         <Route path="/cart" element={<CartPage />} />
-        <Route path="*" element={<NotFound />} />
         */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
       </>
     )

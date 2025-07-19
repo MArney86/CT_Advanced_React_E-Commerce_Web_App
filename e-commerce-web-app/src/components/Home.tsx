@@ -35,7 +35,6 @@ const Home: React.FC = () => {
                         <select
                             className="form-select"
                             id="category-select"
-                            defaultValue={"All"}
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}>
                             <option value="All">All</option>

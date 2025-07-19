@@ -7,6 +7,9 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import type { Product } from '../interfaces/Product';
 import { Rating } from '@smastrom/react-rating';
+import { useDispatch } from 'react-redux';
+import type { CartItem } from '../interfaces/CartItem';
+import { addItem } from '../redux/slices/CartSlice';
 
 const fetchProducts = async (): Promise<Product[]> => {
     const response = await axios.get('https://fakestoreapi.com/products');
@@ -15,6 +18,8 @@ const fetchProducts = async (): Promise<Product[]> => {
 }
 
 export default function Products({ category = "All"}: { category: string }) {
+    const dispatch = useDispatch();
+    
     const { data, isLoading, error } = useQuery<Product[], Error>({
         queryKey: ['products'],
         queryFn: fetchProducts,
@@ -31,6 +36,18 @@ export default function Products({ category = "All"}: { category: string }) {
             ? 'Connection timeout. Please check your internet connection and try again.'
             : `Error: ${error.message}`;
         return <div>{errorMessage}</div>;
+    }
+
+    function addToCart(product: Product): void {
+        const newCartItem: CartItem = {
+            id: null,
+            prodId: product.id,
+            title: product.title,
+            price: product.price,
+            quantity: 1,
+        };
+        dispatch(addItem(newCartItem));
+        alert(`${product.title} added to cart!`);
     }
 
     return (
@@ -54,7 +71,7 @@ export default function Products({ category = "All"}: { category: string }) {
                                 <Card.Text className='small-text'>Rating: {product.rating.rate} ({product.rating.count} reviews)</Card.Text>
                             </Card.Body>
                             <Card.Footer className='product-card-btn'>
-                                <Button className='btn_product' variant='primary'>Add to Cart</Button>
+                                <Button className='btn_product' variant='primary' onClick={() => addToCart(product)}>Add to Cart</Button>
                             </Card.Footer>
                         </Card>
                     </Col>
