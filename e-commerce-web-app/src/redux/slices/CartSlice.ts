@@ -1,26 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { CartItem } from '../../interfaces/CartItem';
-
+import { saveCartToStorage, loadCartFromStorage } from '../../utlilities/sessionStorageUtils';
 // Session storage helper functions
-const saveCartToStorage = (cartState: CartState) => {
-    try {
-        sessionStorage.setItem('cart', JSON.stringify(cartState));
-    } catch (error) {
-        console.error('Failed to save cart to session storage:', error);
-    }
-};
 
-const loadCartFromStorage = (): CartState | null => {
-    try {
-        const savedCart = sessionStorage.getItem('cart');
-        return savedCart ? JSON.parse(savedCart) : null;
-    } catch (error) {
-        console.error('Failed to load cart from session storage:', error);
-        return null;
-    }
-};
-
-interface CartState {
+export interface CartState {
     items: CartItem[];
     status: 'idle' | 'loading' | 'error';
     error: string | null;

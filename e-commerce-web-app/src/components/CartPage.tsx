@@ -5,14 +5,16 @@ import Container from 'react-bootstrap/Container';
 import InputGroup from 'react-bootstrap/InputGroup'
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert';
+import Popover from 'react-bootstrap/Popover';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { CartItem } from '../interfaces/CartItem';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import type { Product } from '../interfaces/Product';
-import Popover from 'react-bootstrap/Popover';
-import { useState } from 'react';
-import { OverlayTrigger } from 'react-bootstrap';
+import type { CartItem } from '../interfaces/CartItem';
+import type { CouponCode } from '../interfaces/CouponCode';
 
 const fetchProducts = async (): Promise<Product[]> => {
     const response = await axios.get('https://fakestoreapi.com/products');
@@ -26,16 +28,35 @@ const CartPage = () => {
     const [couponDiscount, setCouponDiscount] = useState<number>(0);
     const [couponCode, setCouponCode] = useState<string>('');
     const [shipping, setShipping] = useState<number>(0);
+    const [codeError, setCodeError] = useState<string>('');
     const dispatch = useDispatch();
     const cartItems = useSelector((state: { cart: { items: CartItem[] } }) => state.cart.items);
+    const couponCodes = useSelector((state: { coupons: CouponCode[] } ) => state.coupons);
     const { data } = useQuery<Product[], Error>({
             queryKey: ['products'],
             queryFn: fetchProducts,
         })
-        
+
     const handleCouponCode = () => {
-        //does something with coupon code
+        couponCodes.filter((code: CouponCode) => {
+            if (code.code === couponCode) {
+                if (!code.isActive) {
+                    setCodeError('This coupon code is not active.');
+                    return;
+                }
+                if (code.expiryDate && code.expiryDate < new Date()) {
+                    setCodeError('This coupon code has expired.');
+                    dispatch({
+                        type: 'coupons/setInactive',
+                        payload: code.id
+                    })
+                    return;
+                }
+                setCouponDiscount(code.discount);
+            }
+        })
     }
+
 
     const handleQuantDecrement = (item: CartItem) => {
         if (item.quantity - 1 < 1) {
@@ -147,7 +168,7 @@ const CartPage = () => {
                                 <h5 className="text-uppercase mb-3">
                                     Shipping
                                 </h5>
-
+                                <div className="mb-4">
                                     <Form.Select id="cart-shipping" className="select p-2 rounded bg-grey w-100" value={shipping} onChange={e => setShipping(Number(e.target.value))}>
                                         <option value={0} disabled>Select your option</option>
                                         <option value={5}>Standard-Delivery- €5.00</option>
@@ -158,16 +179,15 @@ const CartPage = () => {
 
                                 <h5 className="text-uppercase mb-3">Coupon code</h5>
 
+                                <InputGroup className="mb-5">
+                                    <Button variant='outline-secondary' onClick={handleCouponCode}>
+                                        Apply
+                                    </Button>
+                                    <Form.Control type="text" placeholder="Enter your code" value={couponCode} onChange={e => setCouponCode(e.target.value)} />
+                                </InputGroup>
                                 <div className="mb-5">
-                                    <Form.Control type="text" placeholder="Enter your code" />
+                                    {codeError && <Alert variant="warning" className="text-center">{codeError}</Alert>}
                                 </div>
-                                <div className="mb-5">
-                                    {/* Coupon Code Applied Message and logic */}
-                                </div>
-
-                                    <h5>
-                                        $ {(cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shipping - couponDiscount).toFixed(2)}
-                                    </h5>
 
                                 <div className="d-flex justify-content-between mb-5">
                                     <h5 className="text-uppercase">
@@ -176,8 +196,8 @@ const CartPage = () => {
                                     <h5>$ {(cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shipping - couponDiscount).toFixed(2)}</h5>
                                 </div>
 
-                                <Button color="dark" block size="lg">
-                                    Register
+                                <Button variant="dark" size="lg" className="w-100">
+                                    Checkout
                                 </Button>
                             </div>
                         </Col>
