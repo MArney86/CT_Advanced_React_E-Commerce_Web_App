@@ -11,6 +11,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import type { Product } from '../interfaces/Product';
 import type { CartItem } from '../interfaces/CartItem';
@@ -30,8 +31,9 @@ const CartPage = () => {
     const [shipping, setShipping] = useState<number>(0);
     const [codeError, setCodeError] = useState<string>('');
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const cartItems = useSelector((state: { cart: { items: CartItem[] } }) => state.cart.items);
-    const couponCodes = useSelector((state: { coupons: CouponCode[] } ) => state.coupons);
+    const couponCodes = useSelector((state: { coupons: { codes: CouponCode[] } }) => state.coupons.codes);
     const { data } = useQuery<Product[], Error>({
             queryKey: ['products'],
             queryFn: fetchProducts,
@@ -44,7 +46,7 @@ const CartPage = () => {
                     setCodeError('This coupon code is not active.');
                     return;
                 }
-                if (code.expiryDate && code.expiryDate < new Date()) {
+                if (code.expiryDate && new Date(code.expiryDate) < new Date()) {
                     setCodeError('This coupon code has expired.');
                     dispatch({
                         type: 'coupons/setInactive',
@@ -55,6 +57,28 @@ const CartPage = () => {
                 setCouponDiscount(code.discount);
             }
         })
+    }
+
+    const handleCheckout = () => {
+        if (cartItems.length === 0) {
+            alert('Your cart is empty. Add some items before checking out.');
+            return;
+        }
+        
+        if (shipping === 0) {
+            alert('Please select a shipping option before proceeding to checkout.');
+            return;
+        }
+
+        // Navigate to checkout page with cart data
+        navigate('/checkout', {
+            state: {
+                cartItems,
+                shipping,
+                couponDiscount,
+                subtotal: cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+            }
+        });
     }
 
 
@@ -120,24 +144,33 @@ const CartPage = () => {
                                 {cartItems.map((item: CartItem) => (
                                     <Row key={item.id} className='mb-4 d-flex justify-content-between align-items-center'>
                                         <Col md={2} xs={6}>
-                                            <Card.Img src='{item.image}' alt={item.title} />
+                                            {data?.find((product: Product) => product.id === item.prodId)?.image ? (
+                                                <Card.Img 
+                                                    src={data.find((product: Product) => product.id === item.prodId)?.image} 
+                                                    alt={item.title} 
+                                                />
+                                            ) : (
+                                                <div className="d-flex align-items-center justify-content-center bg-light rounded" style={{ height: '100px' }}>
+                                                    <span className="text-muted">No Image</span>
+                                                </div>
+                                            )}
                                         </Col>
                                         <Col md={3} xs={6}>
                                             <h5 className='text-black mb-0'>{item.title}</h5>
                                         </Col>
                                         <Col md={3} xs={6} className='d-flex align-items-center'>
-                                            <InputGroup className='w-50'>
-                                                <Button onClick={() => handleQuantDecrement(item)} className='btn btn-cart-list me-2'>
+                                            <InputGroup>
+                                                <Button onClick={() => handleQuantDecrement(item)} className='cart-btn'>
                                                     <span className="material-symbols-outlined">stat_minus_1</span>
                                                 </Button>
-                                                <Form.Control type="number" className='form-control text-center' value={item.quantity} readOnly />
-                                                <Button onClick={() => handleQuantIncrement(item)} className='btn btn-cart-list ms-2'>
+                                                <Form.Control type="number" className='text-center' value={item.quantity} style={{ pointerEvents: 'none'}} readOnly />
+                                                <Button onClick={() => handleQuantIncrement(item)} className='cart-btn'>
                                                     <span className="material-symbols-outlined">stat_1</span>
                                                 </Button>
                                             </InputGroup>
                                         </Col>
                                         <Col md={3} xs={6}>
-                                            <h5 className='text-end mb-0'>{data?.find((product: Product) => product.id === item.prodId)?.price ?? item.price}</h5>
+                                            <h5 className='text-end mb-0'>{data?.find((product: Product) => product.id === item.prodId)?.price.toFixed(2) ?? item.price.toFixed(2)}</h5>
                                         </Col>
                                         <Col md={1} xs={6} className='text-end'>
                                             <OverlayTrigger trigger="click" placement="top" overlay={confirmRemove}>
@@ -196,7 +229,13 @@ const CartPage = () => {
                                     <h5>$ {(cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shipping - couponDiscount).toFixed(2)}</h5>
                                 </div>
 
-                                <Button variant="dark" size="lg" className="w-100">
+                                <Button 
+                                    variant="dark" 
+                                    size="lg" 
+                                    className="w-100"
+                                    onClick={handleCheckout}
+                                    disabled={cartItems.length === 0}
+                                >
                                     Checkout
                                 </Button>
                             </div>

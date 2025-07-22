@@ -193,3 +193,17 @@
   --bs-btn-padding-x: 25px;
   background: #29803b;
 }
+
+.cart-btn {
+  position: relative;
+  width: 30px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #68bb79;
+  color: #ffffff;
+}
+
+.cart-btn:hover {
+  background-color: #29803b;
+  
+}
