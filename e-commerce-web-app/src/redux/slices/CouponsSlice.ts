@@ -30,8 +30,8 @@ const initialState: CouponsState = loadCouponsFromStorage() || {
     codes: [ //example coupon codes
         { id: 0, code: 'BLACKFRIDAY', discount: 20, percentage: true, expiryDate: '2024-12-01T00:00:00.000Z', isActive: false },
         { id: 1, code: 'CYBERMONDAY', discount: 25, percentage: true, expiryDate: '2024-12-02T00:00:00.000Z', isActive: true },
-        { id: 2, code: 'SUMMERSALE', discount: 15, percentage: false, expiryDate: '2025-08-30T00:00:00.000Z', isActive: true },
-        { id: 3, code: 'WINTERSALE', discount: 30, percentage: true, expiryDate: '2025-01-15T00:00:00.000Z', isActive: false },
+        { id: 2, code: 'SUMMERSALE', discount: 15, percentage: false, expiryDate: '2026-08-30T00:00:00.000Z', isActive: true },
+        { id: 3, code: 'WINTERSALE', discount: 30, percentage: true, expiryDate: '2026-01-15T00:00:00.000Z', isActive: true },
         { id: 4, code: 'CODINGTEMPLE', discount: 99.99, percentage: true, expiryDate: '2026-01-01T00:00:00.000Z', isActive: true }  
     ],
     status: 'idle',
